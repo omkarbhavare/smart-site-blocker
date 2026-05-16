@@ -126,7 +126,22 @@ async function handleNavigation(details) {
   const { threshold, fuzzyEnabled, deepScanEnabled } = settings;
 
   // ── Whitelist check (fast exit) ──────────────────────────────────────────────
-  if (domainInList(domain, whitelist)) return;
+  // FIX
+const isWhitelisted = domainInList(domain, whitelist);
+
+// Whitelisted domains skip blacklist check and get a higher threshold
+// but keyword scoring still runs on the full URL
+if (isWhitelisted) {
+    // Only do a URL/query keyword check — no deep scan needed
+    const result = analyzeWebsite(
+        { url, domain, title: '', metadata: {} },
+        { keywords, regexRules, threshold, fuzzyEnabled }
+    );
+    if (result.blocked) {
+        await redirectToBlockedPage(tabId, url, result);
+    }
+    return; // allow if no keyword found in URL
+}
 
   // ── Blacklist check (immediate block) ────────────────────────────────────────
   if (domainInList(domain, blacklist)) {
