@@ -57,54 +57,8 @@ A website is blocked only when the final score passes a configurable threshold.
 
 Project Structure
 
-smart-site-blocker/
-│
-├── manifest.json
-│   └── Chrome Extension Manifest V3 configuration
-│
-├── background.js
-│   └── Service worker
-│       • Navigation interception
-│       • Fast-path URL analysis
-│       • Blocking decisions
-│
-├── content.js
-│   └── Deep metadata scanner
-│       • Reads page title
-│       • Extracts meta tags
-│       • Extracts OpenGraph data
-│
-├── popup.html / popup.js
-│   └── Toolbar popup UI
-│       • Enable/disable toggle
-│       • Keyword management
-│       • Block counter
-│
-├── options.html / options.js
-│   └── Full settings dashboard
-│       • Threshold configuration
-│       • Whitelist/blacklist
-│       • Regex rules
-│       • Advanced settings
-│
-├── blocked.html / blocked.js
-│   └── Custom blocked page
-│       • Shows matched keyword
-│       • Displays score & reason
-│
-└── utils/
-    │
-    ├── analyzer.js
-    │   └── Weighted multi-layer scoring engine
-    │
-    ├── storage.js
-    │   └── chrome.storage.sync helpers
-    │
-    ├── fuzzy.js
-    │   └── Levenshtein fuzzy matching logic
-    │
-    └── normalizer.js
-        └── URL/domain/text normalization
+<img width="1536" height="1024" alt="ChatGPT Image May 16, 2026, 06_05_24 PM" src="https://github.com/user-attachments/assets/defbbed9-29be-4832-98c0-482d3ae463b8" />
+
 
 Architecture — 3 Moving Parts
 1. Background Service Worker (background.js)
