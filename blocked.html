@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paused — Smart Site Blocker</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Cinzel:wght@400;600&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #080810;
+      --surface:   #0e0e1a;
+      --border:    #1a1a2e;
+      --gold:      #c9a84c;
+      --gold-dim:  #5a4d28;
+      --text:      #d8d4c8;
+      --muted:     #6b6880;
+      --danger-bg: rgba(139,32,32,0.92);
+      --radius:    3px;
+    }
+
+    html, body {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse 80% 70% at 50% 50%, rgba(201,168,76,0.05) 0%, transparent 65%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .bg-lines {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background-image: repeating-linear-gradient(
+        180deg,
+        transparent,
+        transparent 79px,
+        rgba(201,168,76,0.018) 79px,
+        rgba(201,168,76,0.018) 80px
+      );
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 700px;
+      margin: 2rem;
+      padding: 4rem 3.5rem 3rem;
+      text-align: center;
+      animation: fadeIn 1s ease both;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .ornament {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 3.5rem;
+      color: var(--gold-dim);
+      font-size: 10px;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      font-family: 'Cinzel', serif;
+    }
+
+    .ornament::before,
+    .ornament::after {
+      content: '';
+      flex: 1;
+      max-width: 100px;
+      height: 1px;
+    }
+    .ornament::before { background: linear-gradient(90deg, transparent, var(--gold-dim)); }
+    .ornament::after  { background: linear-gradient(90deg, var(--gold-dim), transparent); }
+
+    .quote-wrap {
+      position: relative;
+      margin-bottom: 3rem;
+      min-height: 140px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .quote-mark {
+      font-size: 7rem;
+      line-height: 0;
+      color: var(--gold-dim);
+      opacity: 0.18;
+      position: absolute;
+      top: 2rem;
+      left: 0;
+      font-family: Georgia, serif;
+      font-style: italic;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .quote-text {
+      font-size: clamp(1.45rem, 3vw, 1.9rem);
+      font-weight: 300;
+      font-style: italic;
+      line-height: 1.7;
+      color: var(--text);
+      padding: 0 1.5rem;
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    .quote-text.exit {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+
+    .quote-text.enter {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    .quote-author {
+      margin-top: 1.25rem;
+      font-size: 0.78rem;
+      letter-spacing: 3.5px;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-family: 'Cinzel', serif;
+      font-weight: 400;
+      opacity: 1;
+      transition: opacity 0.5s ease;
+    }
+
+    .quote-author.exit { opacity: 0; }
+
+    .divider {
+      width: 48px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+      margin: 0 auto 2.5rem;
+    }
+
+    .countdown-label {
+      font-size: 10px;
+      letter-spacing: 3.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-family: 'Cinzel', serif;
+      margin-bottom: 1.5rem;
+    }
+
+    .progress-ring-wrap {
+      position: relative;
+      width: 150px;
+      height: 150px;
+      margin: 0 auto 0.5rem;
+    }
+
+    .progress-ring { transform: rotate(-90deg); }
+
+    .ring-bg {
+      fill: none;
+      stroke: #12121f;
+      stroke-width: 2.5;
+    }
+
+    .ring-fill {
+      fill: none;
+      stroke: var(--gold);
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 1s linear, stroke 0.8s ease;
+    }
+
+    .ring-fill.urgent { stroke: #b85c5c; }
+
+    .ring-inner {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .timer-display {
+      font-size: 2.6rem;
+      font-family: 'Cinzel', serif;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      color: var(--gold);
+      line-height: 1;
+      transition: color 0.8s ease;
+      text-shadow: 0 0 30px rgba(201,168,76,0.25);
+    }
+
+    .timer-display.urgent {
+      color: #b85c5c;
+      text-shadow: 0 0 30px rgba(184,92,92,0.35);
+      animation: flicker 1.2s ease infinite;
+    }
+
+    @keyframes flicker {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.75; }
+    }
+
+    .blocked-url {
+      margin-top: 2.5rem;
+      font-size: 10.5px;
+      color: #222234;
+      letter-spacing: 0.3px;
+      font-family: 'Courier New', monospace;
+      word-break: break-all;
+    }
+
+    .bottom-note {
+      margin-top: 0.6rem;
+      font-size: 10px;
+      color: #1e1e2e;
+      letter-spacing: 2px;
+      font-family: 'Cinzel', serif;
+    }
+
+    .go-back-btn {
+      display: none;
+      margin: 2.5rem auto 0;
+      padding: 0.9rem 3rem;
+      background: transparent;
+      border: 1px solid var(--gold-dim);
+      color: var(--gold);
+      font-family: 'Cinzel', serif;
+      font-size: 11px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      cursor: pointer;
+      border-radius: var(--radius);
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .go-back-btn:hover {
+      background: rgba(201,168,76,0.07);
+      border-color: var(--gold);
+    }
+
+    .go-back-btn.visible {
+      display: block;
+      animation: fadeIn 0.8s ease both;
+    }
+
+    /* Reset warning banner — slides down from top */
+    .reset-banner {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      background: var(--danger-bg);
+      border-bottom: 1px solid rgba(255,80,80,0.25);
+      text-align: center;
+      padding: 0.9rem 1.5rem;
+      font-family: 'Cinzel', serif;
+      font-size: 11px;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: #ffb0b0;
+      transform: translateY(-100%);
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 200;
+    }
+
+    .reset-banner.show { transform: translateY(0); }
+
+    .loserBtn {
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: #080810;
+  background: var(--gold);
+  border: none;
+  border-radius: 2px;
+  padding: 7px 18px;
+  cursor: pointer;
+  white-space: nowrap;
+  line-height: 1;
+  transition: background 0.2s, transform 0.1s;
+}
+  </style>
+</head>
+<body>
+  <div class="bg-lines"></div>
+  <div class="reset-banner" id="resetBanner">⚑ &nbsp; You looked away — the timer has been reset</div>
+
+  <div class="container">
+    <div class="ornament">Smart Site Blocker</div>
+
+    <div class="quote-wrap">
+      <span class="quote-mark">"</span>
+      <p class="quote-text" id="quoteText">Loading…</p>
+      <p class="quote-author" id="quoteAuthor"></p>
+    </div>
+
+    <div class="divider"></div>
+
+    <p class="countdown-label">Reflect for a moment before continuing</p>
+
+    <div class="progress-ring-wrap">
+      <svg class="progress-ring" width="150" height="150" viewBox="0 0 150 150">
+        <circle class="ring-bg"   cx="75" cy="75" r="66"/>
+        <circle class="ring-fill" cx="75" cy="75" r="66" id="ringFill"/>
+      </svg>
+      <div class="ring-inner">
+        <div class="timer-display" id="timerDisplay">10:00</div>
+      </div>
+    </div>
+
+    <button class="loserBtn">I am not a loser.
+I am stronger than my excuses.
+</button>
+
+    <p class="blocked-url" id="blockedUrl"></p>
+    <p class="loserBtn">Stay disciplined · Stay focused</p>
+
+    <button class="go-back-btn" id="goBackBtn" onclick="history.back()">
+      ← Return
+    </button>
+  </div>
+
+  <script src="blocked.js"></script>
+</body>
+</html>

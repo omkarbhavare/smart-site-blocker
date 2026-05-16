@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Site Blocker — Settings</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0c0c14;
+      --surface:  #13131e;
+      --surface2: #1a1a28;
+      --border:   #252538;
+      --accent:   #7c6af7;
+      --accent2:  #e5533d;
+      --text:     #e0e0f0;
+      --muted:    #666880;
+      --green:    #4caf88;
+      --radius:   12px;
+      --font:     'Segoe UI', system-ui, sans-serif;
+    }
+
+    html { background: var(--bg); }
+
+    body {
+      font-family: var(--font);
+      font-size: 14px;
+      color: var(--text);
+      background: var(--bg);
+      min-height: 100vh;
+      padding-bottom: 60px;
+    }
+
+    /* Layout */
+    .layout {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Header */
+    .top-header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .top-header h1 {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+
+    .top-header .version {
+      font-size: 11px;
+      color: var(--muted);
+      background: var(--surface2);
+      padding: 3px 8px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+    }
+
+    /* Main grid */
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      padding: 24px 0;
+    }
+
+    @media (max-width: 680px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+    }
+
+    .card.full-width { grid-column: 1 / -1; }
+
+    .card-title {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-title::before {
+      content: '';
+      width: 3px;
+      height: 14px;
+      border-radius: 2px;
+      background: var(--accent);
+    }
+
+    /* Textarea */
+    textarea {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'Courier New', monospace;
+      font-size: 12.5px;
+      line-height: 1.6;
+      padding: 12px;
+      resize: vertical;
+      outline: none;
+      min-height: 120px;
+      transition: border-color 0.15s;
+    }
+
+    textarea:focus { border-color: var(--accent); }
+
+    .textarea-hint {
+      font-size: 11px;
+      color: #444460;
+      margin-top: 6px;
+    }
+
+    /* Range slider */
+    .slider-group {
+      margin-bottom: 16px;
+    }
+
+    .slider-group:last-child { margin-bottom: 0; }
+
+    .slider-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .slider-label {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .slider-value {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent);
+      font-variant-numeric: tabular-nums;
+      background: rgba(124,106,247,0.1);
+      padding: 2px 10px;
+      border-radius: 20px;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 4px;
+      background: var(--border);
+      border-radius: 4px;
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      border: 3px solid var(--bg);
+      box-shadow: 0 0 0 1px var(--accent);
+      transition: transform 0.1s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+
+    .slider-hint {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    /* Toggle rows */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .toggle-row:last-child { border-bottom: none; }
+
+    .toggle-info .toggle-name {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 3px;
+    }
+
+    .toggle-info .toggle-desc {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .toggle {
+      position: relative;
+      width: 42px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+
+    .toggle input { opacity: 0; width: 0; height: 0; }
+
+    .slider-sw {
+      position: absolute;
+      inset: 0;
+      background: #333345;
+      border-radius: 24px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .slider-sw::before {
+      content: '';
+      position: absolute;
+      left: 3px;
+      top: 3px;
+      width: 18px;
+      height: 18px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.2s;
+    }
+
+    input:checked + .slider-sw { background: var(--accent); }
+    input:checked + .slider-sw::before { transform: translateX(18px); }
+
+    /* Action buttons */
+    .actions-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding: 20px 0 0;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 18px;
+      border-radius: 8px;
+      font-family: var(--font);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s;
+      letter-spacing: 0.2px;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #8f7fff;
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .btn-danger {
+      background: transparent;
+      color: var(--accent2);
+      border: 1px solid rgba(229,83,61,0.3);
+    }
+
+    .btn-danger:hover {
+      background: rgba(229,83,61,0.1);
+    }
+
+    /* Toast notification */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--green);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      transform: translateY(80px);
+      opacity: 0;
+      transition: transform 0.3s cubic-bezier(0.16,1,0.3,1), opacity 0.3s;
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    .toast.visible {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast.error { background: var(--accent2); }
+
+    /* Hidden file input */
+    #importInput { display: none; }
+
+    /* Lock banner */
+    .lock-banner {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      background: rgba(100,30,30,0.96);
+      border-bottom: 1px solid rgba(200,60,60,0.3);
+      font-size: 12px;
+      font-weight: 600;
+      color: #e09090;
+      letter-spacing: 0.4px;
+      backdrop-filter: blur(8px);
+    }
+
+    .lock-banner.hidden { display: none; }
+
+    .lock-banner .lock-timer {
+      font-variant-numeric: tabular-nums;
+      font-size: 14px;
+      color: #ffaaaa;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    /* Locked textarea appearance */
+    .locked-field {
+      opacity: 0.45 !important;
+      cursor: not-allowed !important;
+      border-color: rgba(200,60,60,0.25) !important;
+      background: rgba(60,20,20,0.4) !important;
+    }
+  </style>
+</head>
+<body>
+  <!-- Lock banner: shown until 15-min countdown completes -->
+  <div class="lock-banner" id="lockBanner">
+    <span>🔒 &nbsp;Keywords &amp; rules are locked — stay on this page to unlock</span>
+    <span class="lock-timer" id="lockTimer">15:00</span>
+  </div>
+
+  <div class="top-header">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+      <path d="M12 2L4 5V11C4 15.5 7.4 19.7 12 21C16.6 19.7 20 15.5 20 11V5L12 2Z"
+        fill="rgba(124,106,247,0.2)" stroke="rgba(124,106,247,0.8)" stroke-width="1.5"/>
+      <path d="M9 12L11 14L15 10" stroke="#7c6af7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <h1>Smart Site Blocker</h1>
+    <span class="version">v1.0.0</span>
+  </div>
+
+  <div class="layout">
+    <div class="grid">
+
+      <!-- Keywords -->
+      <div class="card">
+        <div class="card-title">Blocked Keywords</div>
+        <textarea id="keywordsArea" rows="8" placeholder="porn&#10;cricket&#10;gambling&#10;(one per line)"></textarea>
+        <p class="textarea-hint">One keyword per line. Applied to URLs, domains, titles, and meta tags.</p>
+      </div>
+
+      <!-- Regex Rules -->
+      <div class="card">
+        <div class="card-title">Regex Rules</div>
+        <textarea id="regexArea" rows="8" placeholder="/(porn|xxx)/i&#10;/(cricket|ipl)/i&#10;(one per line)"></textarea>
+        <p class="textarea-hint">Format: /pattern/flags — e.g. <code>/(bet|gambling)/i</code></p>
+      </div>
+
+      <!-- Whitelist -->
+      <div class="card">
+        <div class="card-title">Whitelist (Never Block)</div>
+        <textarea id="whitelistArea" rows="5" placeholder="google.com&#10;wikipedia.org&#10;(one domain per line)"></textarea>
+        <p class="textarea-hint">Domains here are always allowed, regardless of keywords.</p>
+      </div>
+
+      <!-- Blacklist -->
+      <div class="card">
+        <div class="card-title">Blacklist (Always Block)</div>
+        <textarea id="blacklistArea" rows="5" placeholder="example-bad-site.com&#10;(one domain per line)"></textarea>
+        <p class="textarea-hint">Domains here are immediately blocked (score = 100).</p>
+      </div>
+
+      <!-- Settings -->
+      <div class="card full-width">
+        <div class="card-title">Detection Settings</div>
+
+        <div class="slider-group">
+          <div class="slider-header">
+            <span class="slider-label">Block Threshold</span>
+            <span class="slider-value" id="thresholdDisplay">40</span>
+          </div>
+          <input type="range" id="thresholdSlider" min="10" max="100" value="40" step="5">
+          <p class="slider-hint">Lower = more aggressive blocking. Higher = fewer false positives. Default: 40.</p>
+        </div>
+
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-name">Fuzzy Matching</div>
+            <div class="toggle-desc">Catch typos and alternate spellings using Levenshtein distance (≤2 edits)</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="fuzzyToggle" checked>
+            <span class="slider-sw"></span>
+          </label>
+        </div>
+
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-name">Deep Scan (Metadata)</div>
+            <div class="toggle-desc">Scan page title, meta tags, and OpenGraph data for suspicious content</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="deepScanToggle" checked>
+            <span class="slider-sw"></span>
+          </label>
+        </div>
+      </div>
+
+    </div><!-- /grid -->
+
+    <div class="actions-bar">
+      <button class="btn btn-primary" id="saveBtn">💾 Save Settings</button>
+      <button class="btn btn-secondary" id="exportBtn">⬇ Export JSON</button>
+      <button class="btn btn-secondary" id="importBtn">⬆ Import JSON</button>
+      <button class="btn btn-danger" id="resetBtn">↺ Reset to Defaults</button>
+      <input type="file" id="importInput" accept=".json">
+    </div>
+  </div><!-- /layout -->
+
+  <div class="toast" id="toast"></div>
+
+  <script src="options.js"></script>
+</body>
+</html>
